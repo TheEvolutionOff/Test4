@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Analysis Tool</title>
+    <style>
+        /* Global styles */
+        body {
+            font-family: Arial, sans-serif; /* Improved font */
+            text-align: center; /* Center align all text */
+        }
+
+        /* Style for the form */
+        #stockForm {
+            margin-bottom: 20px; /* Space below the form */
+        }
+
+        /* Style for the select dropdown */
+        #ticker {
+            font-size: 18px; /* Larger font size */
+            padding: 8px; /* Padding around text */
+            width: 200px; /* Fixed width for consistency */
+        }
+
+        /* Style for the chart container */
+        #chartContainer {
+            width: 80%; /* Adjusted width */
+            margin: 20px auto; /* Center align the chart container */
+            text-align: center; /* Align chart content to the left */
+        }
+
+        #chartContainer img {
+            max-width: 100%; /* Ensure image scales within the container */
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <form id="stockForm" action="/process" method="post">
+        <label for="ticker" style="font-size: 24px;">Choose Asset:</label><br>
+        <select id="ticker" name="ticker" required>
+            {% for ticker, name in assets.items() %}
+            <option value="{{ ticker }}">{{ name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <div id="chartContainer">
+        <!-- Chart will be displayed here -->
+    </div>
+
+    <!-- Defer jQuery loading to ensure the DOM is fully parsed first -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+    <script>
+        // Wait for the document to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const cache = {};
+
+            // Function to handle form submission
+            function submitForm() {
+                const ticker = $('#ticker').val();
+
+                if (cache[ticker]) {
+                    $('#chartContainer').html(cache[ticker]);
+                } else {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/process',
+                        data: $('#stockForm').serialize(),
+                        success: function(response) {
+                            cache[ticker] = response;
+                            // Display chart
+                            $('#chartContainer').html(response);
+                        },
+                        error: function(error) {
+                            console.log(error);
+                            alert('Error processing request.');
+                        }
+                    });
+                }
+            }
+
+            // Trigger form submission on dropdown change
+            $('#ticker').change(submitForm);
+
+            // Trigger form submission on page load
+            submitForm();
+        });
+    </script>
+</body>
+</html>
