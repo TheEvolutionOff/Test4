@@ -170,17 +170,3 @@ def moving_average(data, window_size):
     """
     cumsum = np.cumsum(np.insert(data, 0, 0))
     return (cumsum[window_size:] - cumsum[:-window_size]) / window_size
-
-@app.route('/')
-def index():
-    return render_template('index.html', assets=asset_names)
-
-@app.route('/process', methods=['POST'])
-def process():
-    ticker = request.form['ticker']
-    data = fetch_data(ticker)
-    prices_array, years, normalized_current_year = process_data(data)
-    previous_year_trading_dates = get_previous_year_trading_dates(data)
-    avg_prices = np.nanmean(prices_array, axis=0)
-    chart = plot_seasonal_chart(avg_prices, normalized_current_year, previous_year_trading_dates, ticker)
-    return chart
